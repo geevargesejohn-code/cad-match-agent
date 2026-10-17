@@ -1,0 +1,15 @@
+services:
+  cad-match-agent:
+    build:
+      context: .
+      args:
+        INSTALL_ML: "false"        # "true" adds DINOv2 embeddings (bigger image)
+    image: cad-match-agent:latest
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./data:/app/data           # library, cache, history and downloaded models persist here
+    env_file:
+      - path: .env
+        required: false            # works without a .env (rule-based agent)
+    restart: unless-stopped

@@ -1,0 +1,27 @@
+# Secrets
+.env
+
+# User data (uploads, caches, database, downloaded models) - keep the folders, not the contents
+data/library/*
+data/cache/*
+data/uploads/
+data/results/
+data/models/
+data/*.db
+!data/library/.gitkeep
+!data/cache/.gitkeep
+# data/samples/ IS committed: demo CAD files + photos
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

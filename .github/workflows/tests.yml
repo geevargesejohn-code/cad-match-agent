@@ -1,0 +1,31 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        segmentation: [classical, rembg]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: System libraries for gmsh (STEP import)
+        run: sudo apt-get update && sudo apt-get install -y libglu1-mesa libxcursor1 libxinerama1 libxft2
+      - name: Cache U^2-Net model
+        if: matrix.segmentation == 'rembg'
+        uses: actions/cache@v4
+        with:
+          path: ~/.u2net
+          key: u2net-v1
+      - run: pip install -r requirements.txt
+      - name: Run tests
+        env:
+          CAD_MATCH_SEGMENTATION: ${{ matrix.segmentation }}
+        run: python -m pytest -q

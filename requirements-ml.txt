@@ -1,0 +1,12 @@
+# Optional: DINOv2 visual embeddings (better appearance matching than the built-in HOG descriptor).
+# Downloads facebook/dinov2-small (~90 MB) from Hugging Face on first use.
+#
+#   CPU only (smaller download):
+#     pip install torch --index-url https://download.pytorch.org/whl/cpu
+#     pip install -r requirements-ml.txt
+#
+# After installing, re-index the library and re-calibrate:
+#     python -m scripts.library_cli reindex
+#     python -m scripts.calibrate --extra 4
+torch>=2.2
+transformers>=4.40

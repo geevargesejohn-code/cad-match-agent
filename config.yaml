@@ -1,0 +1,64 @@
+# CAD Match Agent configuration.
+# Every value here can be tuned without touching code.
+
+paths:
+  data_dir: data
+  library_dir: data/library    # original uploaded CAD files
+  cache_dir: data/cache        # normalized meshes, view features, thumbnails
+  uploads_dir: data/uploads    # photos submitted for tests
+  results_dir: data/results    # comparison images for each test
+  db_file: data/cad_match.db   # SQLite: library items + test history
+
+cad:
+  supported_formats: [".stl", ".obj", ".ply", ".step", ".stp"]
+  max_file_mb: 200
+  step_mesh_size_factor: 0.5   # smaller = finer STEP tessellation
+  step_curvature_points: 24    # mesh elements per 2*pi of curvature
+
+rendering:
+  num_views: 60                # viewpoints rendered per model at upload
+  refine_views: 72             # extra viewpoints when the agent is unsure
+
+photo:
+  segmentation_backend: auto   # auto | rembg | classical
+  rembg_model: u2net
+
+matching:
+  embedding_backend: auto      # auto | dinov2 | hog
+  dinov2_model: facebook/dinov2-small
+
+  # Tuned with `python -m scripts.calibrate --extra 4` on the bundled samples
+  # (HOG backend + rembg segmentation). Re-run it on your own labeled photos.
+  weights:
+    embedding: 0.25            # visual similarity of the shaded object
+    iou: 0.15                  # silhouette overlap at the best pose
+    edges: 0.15                # all edges (outline + internal) at the best pose
+    inner_edges: 0.15          # internal edges only: hole rims, steps, face boundaries
+    hu: 0.05                   # Hu-moment shape similarity
+    proportions: 0.25          # aspect ratio, solidity, visible hole count
+
+  # Raw value -> 0..1 mapping: [value that scores 0, value that scores 1]
+  signal_ranges:
+    iou: [0.75, 0.93]
+    edges: [0.72, 0.88]
+    inner_edges: [0.62, 0.86]
+    hu: [0.30, 0.90]
+    proportions: [0.40, 0.95]
+  embedding_ranges:
+    hog: [0.65, 0.88]
+    dinov2: [0.45, 0.85]       # untuned default: run scripts/calibrate.py after installing DINOv2
+
+  match_threshold: 0.62        # score >= this -> MATCH
+  no_match_threshold: 0.48     # score <= this -> NOT A MATCH; in between -> agent investigates
+  # Reference test: if another library model beats the reference by this much,
+  # the object is more likely that other design -> NOT A MATCH.
+  alternative_margin: 0.05
+  top_k_candidates: 3
+
+agent:
+  provider: none               # none | anthropic | openai | ollama  (env CAD_MATCH_LLM_PROVIDER overrides)
+  max_steps: 12
+  anthropic_model: claude-sonnet-5-5
+  openai_model: gpt-4.1
+  ollama_model: qwen2.5vl:7b
+  request_timeout_s: 120
